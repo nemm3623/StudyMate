@@ -1,5 +1,6 @@
 package com.example.studymate.controller;
 
+import com.example.studymate.dto.ChangePwDto;
 import com.example.studymate.dto.LoginResponseDto;
 import com.example.studymate.dto.LogoutRequestDto;
 import com.example.studymate.dto.UserRequestDto;
@@ -44,5 +45,15 @@ public class UserController {
             return ResponseEntity.ok("로그아웃 성공 !");
         else
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+    }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePwDto dto) {
+        try {
+            userService.changePassword(dto);
+        }catch (IllegalStateException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        return ResponseEntity.ok("비밀번호 변경이 완료되었습니다.");
     }
 }

@@ -10,7 +10,7 @@ import java.util.Collections;
 
 
 @RequiredArgsConstructor
-public class CustomUserDetail implements UserDetails {
+public class CustomUserDetails implements UserDetails {
     private final User user;
 
     @Override
@@ -25,6 +25,6 @@ public class CustomUserDetail implements UserDetails {
 
     @Override
     public String getUsername() {
-        return "";
+        return user.getUsername();
     }
 }

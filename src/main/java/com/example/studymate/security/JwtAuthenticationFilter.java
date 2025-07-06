@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -30,18 +29,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 토큰이 존재하고 토큰이 유효할 경우
         if (token != null && jwtTokenProvider.validateToken(token)) {
             String username = jwtTokenProvider.getUsername(token);
-
+            System.out.println("username: " + username);
 
             // 사용자 정보를 가져와서 인증 객체 생성
             // UserDetails를 사용하는 이유는 SpringSecurity에서 인증 처리를 하기 위해 사용되는 표준이기 때문
-            UserDetails userDetails = userDetailService.loadUserByUsername(username);
+            CustomUserDetails userDetails = userDetailService.loadUserByUsername(username);
+
 
             // 인증 토큰 생성
             UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    new UsernamePasswordAuthenticationToken(userDetails,null, userDetails.getAuthorities());
 
-            //  인증 완료 저장 -> 인증 완료되어 다음 필터 진행 X
+            //  인증 완료 저장
+//            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            System.out.println("컨트롤러 진입시 인증 정보: " + SecurityContextHolder.getContext().getAuthentication());
+
         }
 
         // 다음 필터로 진행, 없으면 컨트롤러로 요청을 넘김

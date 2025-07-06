@@ -1,5 +1,6 @@
 package com.example.studymate.service;
 
+import com.example.studymate.dto.ChangePwDto;
 import com.example.studymate.dto.LogoutRequestDto;
 import com.example.studymate.security.JwtTokenProvider;
 import com.example.studymate.domain.User;
@@ -7,6 +8,7 @@ import com.example.studymate.dto.LoginResponseDto;
 import com.example.studymate.dto.UserRequestDto;
 import com.example.studymate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+
     @Transactional(readOnly = true)
     public LoginResponseDto login(UserRequestDto dto) {
 
@@ -55,7 +58,7 @@ public class UserService {
         String accessToken = jwtTokenProvider.createAccessToken(user.getUsername());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getUsername());
 
-        redisService.set("refreshToken:" + user.getUsername(), refreshToken, 300);
+        redisService.set("refreshToken:" + user.getUsername(), refreshToken, 604800);
 
         return new LoginResponseDto(accessToken, refreshToken);
     }
@@ -67,6 +70,22 @@ public class UserService {
         String username = jwtTokenProvider.getUsername(dto.getRefreshToken());
 
         return redisService.delete("refreshToken:" + username);
+
+    }
+
+    // 비밀번호 변경
+    @Transactional
+    public void changePassword(ChangePwDto dto) {
+
+        // getContext()로 인증
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("**"+ username +"**" +"해당 유저가 존재하지 않습니다."));
+
+        if(!passwordEncoder.matches(dto.getCurrentPw(), user.getPassword()))
+            throw new IllegalArgumentException("입력하신 패스워드가 일치하지 않습니다.");
+
+        userRepository.updateByPassword(username, passwordEncoder.encode(dto.getNewPw()));
 
     }
 }
