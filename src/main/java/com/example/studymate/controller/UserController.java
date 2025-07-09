@@ -1,9 +1,6 @@
 package com.example.studymate.controller;
 
-import com.example.studymate.dto.ChangePwDto;
-import com.example.studymate.dto.LoginResponseDto;
-import com.example.studymate.dto.LogoutRequestDto;
-import com.example.studymate.dto.UserRequestDto;
+import com.example.studymate.dto.*;
 import com.example.studymate.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -45,5 +42,10 @@ public class UserController {
 
         userService.changePassword(dto);
         return ResponseEntity.ok("비밀번호 변경이 완료되었습니다.");
+    }
+
+    @PostMapping("/findUsername")
+    public ResponseEntity<FindUsernameResponseDto> findUsername(@RequestBody FindUsernameRequestDto dto) {
+        return ResponseEntity.ok(userService.findUsername(dto));
     }
 }

@@ -1,15 +1,12 @@
 package com.example.studymate.service;
 
-import com.example.studymate.dto.ChangePwDto;
-import com.example.studymate.dto.LogoutRequestDto;
+import com.example.studymate.dto.*;
 import com.example.studymate.exception.AuthFailedException;
 import com.example.studymate.exception.InvalidPasswordException;
 import com.example.studymate.exception.ErrorCode;
 import com.example.studymate.exception.UserNotFoundException;
 import com.example.studymate.security.JwtTokenProvider;
 import com.example.studymate.domain.User;
-import com.example.studymate.dto.LoginResponseDto;
-import com.example.studymate.dto.UserRequestDto;
 import com.example.studymate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -93,4 +90,14 @@ public class UserService {
         userRepository.updateByPassword(username, passwordEncoder.encode(dto.getNewPw()));
 
     }
+
+    // 아이디 찾기
+    public FindUsernameResponseDto findUsername(FindUsernameRequestDto dto) {
+
+        User user = userRepository.findByNicknameAndEmail(dto.getNickname(),dto.getEmail())
+                .orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+
+        return new FindUsernameResponseDto(user.getUsername());
+    }
+    
 }

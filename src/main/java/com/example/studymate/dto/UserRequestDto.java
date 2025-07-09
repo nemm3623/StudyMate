@@ -3,7 +3,7 @@ package com.example.studymate.dto;
 
 import lombok.*;
 
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRequestDto {
