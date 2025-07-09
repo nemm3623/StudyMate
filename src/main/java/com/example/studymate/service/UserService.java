@@ -2,6 +2,10 @@ package com.example.studymate.service;
 
 import com.example.studymate.dto.ChangePwDto;
 import com.example.studymate.dto.LogoutRequestDto;
+import com.example.studymate.exception.AuthFailedException;
+import com.example.studymate.exception.InvalidPasswordException;
+import com.example.studymate.exception.ErrorCode;
+import com.example.studymate.exception.UserNotFoundException;
 import com.example.studymate.security.JwtTokenProvider;
 import com.example.studymate.domain.User;
 import com.example.studymate.dto.LoginResponseDto;
@@ -50,10 +54,10 @@ public class UserService {
     public LoginResponseDto login(UserRequestDto dto) {
 
         User user = userRepository.findByUsername(dto.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("아이디 혹은 패스워드가 일치하지 않습니다."));
+                .orElseThrow(() -> new AuthFailedException(ErrorCode.AUTH_FAILED));
 
         if(!passwordEncoder.matches(dto.getPassword(), user.getPassword()))
-            throw new IllegalArgumentException("아이디 혹은 패스워드가 일치하지 않습니다.");
+            throw new AuthFailedException(ErrorCode.AUTH_FAILED);
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getUsername());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getUsername());
@@ -77,13 +81,14 @@ public class UserService {
     @Transactional
     public void changePassword(ChangePwDto dto) {
 
-        // getContext()로 인증
+        // 현재 스레드의 SecurityContext 가져오고 안에 저장된 Authentication 객체를 가져옴
+        // jwt토큰이 필터에서 인증정보로 변환되어 Authentication 객체가 되어 SecurityContext 저장됨
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("**"+ username +"**" +"해당 유저가 존재하지 않습니다."));
+                .orElseThrow(()-> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
 
         if(!passwordEncoder.matches(dto.getCurrentPw(), user.getPassword()))
-            throw new IllegalArgumentException("입력하신 패스워드가 일치하지 않습니다.");
+            throw new InvalidPasswordException(ErrorCode.INVALID_PASSWORD);
 
         userRepository.updateByPassword(username, passwordEncoder.encode(dto.getNewPw()));
 

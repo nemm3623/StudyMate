@@ -20,15 +20,8 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody UserRequestDto dto) {
-
-        try {
-
             userService.signup(dto);
             return ResponseEntity.ok("회원가입 성공 !");
-
-        }catch (IllegalStateException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @PostMapping("/login")
@@ -49,11 +42,8 @@ public class UserController {
 
     @PostMapping("/changePassword")
     public ResponseEntity<String> changePassword(@RequestBody ChangePwDto dto) {
-        try {
-            userService.changePassword(dto);
-        }catch (IllegalStateException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+
+        userService.changePassword(dto);
         return ResponseEntity.ok("비밀번호 변경이 완료되었습니다.");
     }
 }
