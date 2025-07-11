@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor  // 기본 생성자 생성
 @AllArgsConstructor // 모든 매개변수를 갖는 생성자 생성
 @Builder

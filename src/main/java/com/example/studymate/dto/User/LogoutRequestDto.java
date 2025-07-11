@@ -1,9 +1,8 @@
-package com.example.studymate.dto;
+package com.example.studymate.dto.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @NoArgsConstructor

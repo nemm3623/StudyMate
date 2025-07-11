@@ -1,6 +1,6 @@
 package com.example.studymate.service;
 
-import com.example.studymate.dto.*;
+import com.example.studymate.dto.User.*;
 import com.example.studymate.exception.AuthFailedException;
 import com.example.studymate.exception.InvalidPasswordException;
 import com.example.studymate.exception.ErrorCode;
@@ -23,6 +23,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
+
 
     // 회원가입
     @Transactional
@@ -64,6 +65,7 @@ public class UserService {
         return new LoginResponseDto(accessToken, refreshToken);
     }
 
+
     // 로그아웃
     @Transactional
     public boolean logout(LogoutRequestDto dto) {
@@ -73,6 +75,7 @@ public class UserService {
         return redisService.delete("refreshToken:" + username);
 
     }
+
 
     // 비밀번호 변경
     @Transactional
@@ -91,6 +94,7 @@ public class UserService {
 
     }
 
+
     // 아이디 찾기
     public FindUsernameResponseDto findUsername(FindUsernameRequestDto dto) {
 
@@ -99,5 +103,5 @@ public class UserService {
 
         return new FindUsernameResponseDto(user.getUsername());
     }
-    
+
 }
