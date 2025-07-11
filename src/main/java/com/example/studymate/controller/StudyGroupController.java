@@ -5,11 +5,10 @@ import com.example.studymate.dto.StudyGroup.CreateGroupRequestDto;
 import com.example.studymate.dto.StudyGroup.JoinGroupRequestDto;
 import com.example.studymate.service.StudyGroupService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/study-group")
@@ -17,6 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class StudyGroupController {
 
     private final StudyGroupService studyGroupService;
+
+    @GetMapping
+        public ResponseEntity<Page<StudyGroup>s> getAllStudyGroups(Pageable pageable) {
+        Page<StudyGroup> studyGroups = studyGroupService.getAllStudyGroups(pageable);
+        return ResponseEntity.ok(studyGroups);
+    }
 
     @PostMapping("/create")
     public ResponseEntity<String> createStudyGroup(@RequestBody CreateGroupRequestDto dto) {

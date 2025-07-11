@@ -12,9 +12,13 @@ import com.example.studymate.repository.StudyGroupUserRepository;
 import com.example.studymate.repository.UserRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 @Service
@@ -24,6 +28,14 @@ public class StudyGroupService {
     private final UserRepository userRepository;
     private final StudyGroupRepository studygroupRepository;
     private final StudyGroupUserRepository studygroupUserRepository;
+
+
+    @Transactional(readOnly = true)
+    public Page<StudyGroup> getAllStudyGroups(Pageable pageable) {
+        // Page<> = 데이터를 페이지 단위로 반환해주는 객체
+        // Pageable = 페이지 번호나 정렬기준 등을 담고 있는 객체
+        return studygroupRepository.findAll(pageable);
+    }
 
     @Transactional
     public void createStudyGroup(CreateGroupRequestDto studyGroup) {
@@ -50,6 +62,7 @@ public class StudyGroupService {
 
     }
 
+    @Transactional
     public void joinStudyGroup(JoinGroupRequestDto dto) {
 
         StudyGroup group = studygroupRepository.findByGroupName(dto.getGroupName()).
@@ -68,6 +81,8 @@ public class StudyGroupService {
         group.increaseNumberOfUser();
 
     }
+
+
 
 
 
