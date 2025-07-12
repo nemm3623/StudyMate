@@ -3,6 +3,7 @@ package com.example.studymate.controller;
 import com.example.studymate.domain.StudyGroup;
 import com.example.studymate.dto.StudyGroup.CreateGroupRequestDto;
 import com.example.studymate.dto.StudyGroup.JoinGroupRequestDto;
+import com.example.studymate.dto.StudyGroup.StudyGroupDto;
 import com.example.studymate.service.StudyGroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,8 +19,8 @@ public class StudyGroupController {
     private final StudyGroupService studyGroupService;
 
     @GetMapping
-        public ResponseEntity<Page<StudyGroup>s> getAllStudyGroups(Pageable pageable) {
-        Page<StudyGroup> studyGroups = studyGroupService.getAllStudyGroups(pageable);
+        public ResponseEntity<Page<StudyGroupDto>> getAllStudyGroups(Pageable pageable) {
+        Page<StudyGroupDto> studyGroups = studyGroupService.getAllStudyGroups(pageable);
         return ResponseEntity.ok(studyGroups);
     }
 

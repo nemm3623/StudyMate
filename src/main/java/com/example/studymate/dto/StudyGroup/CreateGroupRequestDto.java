@@ -9,6 +9,6 @@ public class CreateGroupRequestDto {
 
     private String groupName;
     private String description;
-    private String Subject;
+    private String subject;
 
 }

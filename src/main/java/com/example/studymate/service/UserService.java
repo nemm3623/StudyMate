@@ -1,10 +1,12 @@
 package com.example.studymate.service;
 
+import com.example.studymate.domain.Role;
 import com.example.studymate.dto.User.*;
 import com.example.studymate.exception.AuthFailedException;
 import com.example.studymate.exception.InvalidPasswordException;
 import com.example.studymate.exception.ErrorCode;
 import com.example.studymate.exception.UserNotFoundException;
+import com.example.studymate.repository.RoleRepository;
 import com.example.studymate.security.JwtTokenProvider;
 import com.example.studymate.domain.User;
 import com.example.studymate.repository.UserRepository;
@@ -14,12 +16,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
@@ -37,11 +42,14 @@ public class UserService {
         if(userRepository.existsByEmail(dto.getEmail()))
             throw new IllegalStateException("이미 존재하는 이메일입니다.");
 
+        Role role = roleRepository.findByName("USER");
+
         User user = User.builder()
                 .username(dto.getUsername())
                 .password(hashedPassword)
                 .email(dto.getEmail())
                 .nickname(dto.getNickname())
+                .roles(Set.of(role))
                 .build();
 
         userRepository.save(user);

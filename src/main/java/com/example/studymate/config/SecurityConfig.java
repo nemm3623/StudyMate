@@ -28,10 +28,10 @@ public class SecurityConfig {
         http        // 메소드 참조 방식(해당 클래스::메소드명) == csrf -> csrf.disable()
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
-                auth-> auth.requestMatchers("/user/signup", "/user/login").permitAll()
+                auth-> auth.requestMatchers("/user/signup", "/user/login","/study-group").permitAll()
                 .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         ;
         return http.build();
     }
