@@ -24,4 +24,7 @@ public class StudyGroupUser {
     @JoinColumn(name = "User_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
+    private StudyGroupRole studyGroupRole;
+
 }

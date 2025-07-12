@@ -1,12 +1,8 @@
 package com.example.studymate.service;
 
-import com.example.studymate.domain.Role;
-import com.example.studymate.domain.StudyGroup;
-import com.example.studymate.domain.StudyGroupUser;
-import com.example.studymate.domain.User;
-import com.example.studymate.dto.StudyGroup.CreateGroupRequestDto;
-import com.example.studymate.dto.StudyGroup.JoinGroupRequestDto;
-import com.example.studymate.dto.StudyGroup.StudyGroupDto;
+import com.example.studymate.domain.*;
+import com.example.studymate.dto.StudyGroup.*;
+import com.example.studymate.exception.AuthFailedException;
 import com.example.studymate.exception.ErrorCode;
 import com.example.studymate.exception.UserNotFoundException;
 import com.example.studymate.repository.RoleRepository;
@@ -43,11 +39,7 @@ public class StudyGroupService {
     public void createStudyGroup(CreateGroupRequestDto dto) {
 
         // 그룹을 만든 유저 객체 가져오기
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(()-> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
-
-        Role role = roleRepository.findByName("LEADER");
+        User user = getCurrentUser();
 
         StudyGroup group = StudyGroup.builder()
                 .groupName(dto.getGroupName())
@@ -59,12 +51,11 @@ public class StudyGroupService {
         StudyGroupUser groupUser = StudyGroupUser.builder()
                 .user(user)
                 .studyGroup(group)
+                .studyGroupRole(StudyGroupRole.LEADER)
                 .build();
 
         studygroupRepository.save(group);
         studygroupUserRepository.save(groupUser);
-
-        user.addRole(role);
 
         group.increaseNumberOfUser();
 
@@ -76,13 +67,12 @@ public class StudyGroupService {
         StudyGroup group = studygroupRepository.findByGroupName(dto.getGroupName()).
                 orElseThrow(()-> new IllegalArgumentException("존재하지 않는 그룹입니다."));
 
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(()-> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+        User user = getCurrentUser();
 
         StudyGroupUser groupUser = StudyGroupUser.builder()
                 .user(user)
                 .studyGroup(group)
+                .studyGroupRole(StudyGroupRole.MEMBER)
                 .build();
 
         studygroupUserRepository.save(groupUser);
@@ -90,8 +80,52 @@ public class StudyGroupService {
 
     }
 
+    @Transactional
+    public void leaveStudyGroup(LeaveGroupRequestDto dto) {
 
+        User user = getCurrentUser();
 
+        StudyGroup group = studygroupRepository.findByGroupName(dto.getGroupName())
+                .orElseThrow(()->new IllegalArgumentException("존재하지 않는 그룹입니다."));
 
+        StudyGroupUser studyGroupUser = studygroupUserRepository.findByStudyGroupAndUserId(group,user.getId())
+                .orElseThrow(()->new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+
+        if(studyGroupUser.getStudyGroupRole().equals(StudyGroupRole.LEADER))
+            throw new IllegalArgumentException("리더는 그룹을 떠날 수 없습니다.");
+
+        studygroupUserRepository.delete(studyGroupUser);
+        group.decreaseNumberOfUser();
+    }
+
+    @Transactional
+    public void deleteStudyGroup(DeleteGroupRequestDto dto){
+
+        User user = getCurrentUser();
+
+        StudyGroup group = studygroupRepository.findByGroupName(dto.getGroupName())
+                .orElseThrow(()->new IllegalArgumentException("존재하지 않는 그룹입니다."));
+
+        StudyGroupUser studyGroupUser = studygroupUserRepository
+                .findByStudyGroupAndUserId(group, user.getId())
+                .orElseThrow(()->new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+
+        checkLeader(studyGroupUser.getStudyGroupRole());
+
+        studygroupUserRepository.deleteAllByStudyGroup(group);
+        studygroupRepository.delete(group);
+
+    }
+
+    public void checkLeader(StudyGroupRole role){
+        if(role != StudyGroupRole.LEADER)
+            throw new IllegalArgumentException("리더만 가능한 권한입니다.");
+    }
+
+    public User getCurrentUser(){
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(()-> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+    }
 
 }

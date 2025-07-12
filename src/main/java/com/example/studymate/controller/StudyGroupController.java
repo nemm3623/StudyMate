@@ -1,9 +1,7 @@
 package com.example.studymate.controller;
 
 import com.example.studymate.domain.StudyGroup;
-import com.example.studymate.dto.StudyGroup.CreateGroupRequestDto;
-import com.example.studymate.dto.StudyGroup.JoinGroupRequestDto;
-import com.example.studymate.dto.StudyGroup.StudyGroupDto;
+import com.example.studymate.dto.StudyGroup.*;
 import com.example.studymate.service.StudyGroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,6 +32,18 @@ public class StudyGroupController {
     public ResponseEntity<String> joinStudyGroup(@RequestBody JoinGroupRequestDto dto) {
         studyGroupService.joinStudyGroup(dto);
         return ResponseEntity.ok(dto.getGroupName() + " 스터디 그룹에 가입하였습니다.");
+    }
+
+    @PostMapping("/leave")
+    public ResponseEntity<String> leaveStudyGroup(@RequestBody LeaveGroupRequestDto dto) {
+        studyGroupService.leaveStudyGroup(dto);
+        return ResponseEntity.ok(dto.getGroupName() + " 스터디 그룹을 탈퇴하였습니다.");
+    }
+
+    @PostMapping("/delete")
+    public ResponseEntity<String> deleteStudyGroup(@RequestBody DeleteGroupRequestDto dto) {
+        studyGroupService.deleteStudyGroup(dto);
+        return ResponseEntity.ok(dto.getGroupName() + " 스터디 그룹이 삭제되었습니다.");
     }
 
 }
