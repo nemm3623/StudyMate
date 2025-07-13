@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -37,5 +39,11 @@ public class StudyGroup {
     }
     public void decreaseNumberOfUser() {
         numberOfUser--;
+    }
+
+    public void transferLeader(User leader){
+        if(Objects.equals(this.leader.getId(), leader.getId()))
+            throw new IllegalArgumentException("이미 그룹의 리더입니다. 다른 유저를 선택하세요.");
+        this.leader = leader;
     }
 }

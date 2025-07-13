@@ -27,4 +27,11 @@ public class StudyGroupUser {
     @Enumerated(EnumType.STRING)
     private StudyGroupRole studyGroupRole;
 
+    public void changeStudyGroupRole(StudyGroupRole studyGroupRole) {
+        if(this.studyGroupRole == studyGroupRole)
+            throw new RuntimeException("이미 같은 역할입니다.");
+
+        this.studyGroupRole = studyGroupRole;
+    }
+
 }
