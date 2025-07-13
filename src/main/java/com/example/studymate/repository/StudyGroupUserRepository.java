@@ -13,4 +13,5 @@ public interface StudyGroupUserRepository extends JpaRepository<StudyGroupUser, 
     Optional<StudyGroupUser> findByStudyGroupAndUserId(StudyGroup studyGroup, Long userId);
     void deleteAllByStudyGroup(StudyGroup studyGroup);
 
+    boolean existsByStudyGroupIdAndUserId(Long groupId, Long userId);
 }

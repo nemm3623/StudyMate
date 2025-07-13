@@ -7,6 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class JoinGroupRequestDto {
 
-    private String groupName;
+    private String introduction;
 
 }
