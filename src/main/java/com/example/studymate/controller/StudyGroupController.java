@@ -3,6 +3,7 @@ package com.example.studymate.controller;
 import com.example.studymate.domain.StudyGroup;
 import com.example.studymate.dto.StudyGroup.*;
 import com.example.studymate.service.StudyGroupService;
+import com.example.studymate.service.StudyGroupUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class StudyGroupController {
 
     private final StudyGroupService studyGroupService;
+    private final StudyGroupUserService studyGroupUserService;
 
     @GetMapping
         public ResponseEntity<Page<StudyGroupDto>> getAllStudyGroups(Pageable pageable) {
@@ -44,6 +46,13 @@ public class StudyGroupController {
     public ResponseEntity<String> deleteStudyGroup(@RequestBody DeleteGroupRequestDto dto) {
         studyGroupService.deleteStudyGroup(dto);
         return ResponseEntity.ok(dto.getGroupName() + " 스터디 그룹이 삭제되었습니다.");
+    }
+
+    @PostMapping("/remove")
+    public ResponseEntity<String> removeMember(@RequestBody RemoveMemberRequestDto dto) {
+        studyGroupUserService.removeMemberFromGroup(dto);
+        return ResponseEntity.ok(dto.getUserName() + "을(를) "
+                + dto.getGroupName() + " 스터디 그룹에서 추방하였습니다.");
     }
 
 }
