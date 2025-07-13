@@ -4,10 +4,7 @@ import com.example.studymate.domain.*;
 import com.example.studymate.dto.StudyGroup.*;
 import com.example.studymate.exception.ErrorCode;
 import com.example.studymate.exception.UserNotFoundException;
-import com.example.studymate.repository.RoleRepository;
-import com.example.studymate.repository.StudyGroupRepository;
-import com.example.studymate.repository.StudyGroupUserRepository;
-import com.example.studymate.repository.UserRepository;
+import com.example.studymate.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class StudyGroupService {
 
-    private final UserRepository userRepository;
     private final StudyGroupRepository studygroupRepository;
     private final StudyGroupUserRepository studygroupUserRepository;
+    private final JoinStudyGroupRepository joinStudygroupRepository;
+    private final UserContextService userContextService;
 
 
     @Transactional(readOnly = true)
@@ -38,7 +36,7 @@ public class StudyGroupService {
     public void createStudyGroup(CreateGroupRequestDto dto) {
 
         // 그룹을 만든 유저 객체 가져오기
-        User user = getCurrentUser();
+        User user = userContextService.getCurrentUser();
 
         StudyGroup group = StudyGroup.builder()
                 .groupName(dto.getGroupName())
@@ -60,80 +58,39 @@ public class StudyGroupService {
 
     }
 
-    // 그룹 가입
-    @Transactional
-    public void joinStudyGroup(JoinGroupRequestDto dto) {
-
-        User user = getCurrentUser();
-
-        StudyGroup group = getCurrentStudyGroup(dto.getGroupName());
-
-        StudyGroupUser groupUser = StudyGroupUser.builder()
-                .user(user)
-                .studyGroup(group)
-                .studyGroupRole(StudyGroupRole.MEMBER)
-                .build();
-
-        studygroupUserRepository.save(groupUser);
-        group.increaseNumberOfUser();
-
-    }
-
-    // 그룹 탈퇴
-    @Transactional
-    public void leaveStudyGroup(LeaveGroupRequestDto dto) {
-
-        User user = getCurrentUser();
-
-        StudyGroup group = getCurrentStudyGroup(dto.getGroupName());
-
-        StudyGroupUser studyGroupUser = getCurrentStudyGroupUser(group, user.getId());
-
-        if(studyGroupUser.getStudyGroupRole().equals(StudyGroupRole.LEADER))
-            throw new IllegalArgumentException("리더는 그룹을 떠날 수 없습니다.");
-
-        studygroupUserRepository.delete(studyGroupUser);
-        group.decreaseNumberOfUser();
-    }
 
     // 그룹 삭제
     @Transactional
     public void deleteStudyGroup(DeleteGroupRequestDto dto){
 
-        User user = getCurrentUser();
+        User user = userContextService.getCurrentUser();
 
         StudyGroup group = studygroupRepository.findByGroupName(dto.getGroupName())
                 .orElseThrow(()->new IllegalArgumentException("존재하지 않는 그룹입니다."));
 
-        StudyGroupUser studyGroupUser = getCurrentStudyGroupUser(group,user.getId());
+        StudyGroupUser studyGroupUser = userContextService.getCurrentStudyGroupUser(group,user.getId());
 
-        isLeader(studyGroupUser.getStudyGroupRole());
+        if(!userContextService.isLeader(studyGroupUser.getStudyGroupRole()))
+            throw new IllegalArgumentException("리더만 가능한 권한입니다.");
 
         studygroupUserRepository.deleteAllByStudyGroup(group);
         studygroupRepository.delete(group);
 
     }
 
-    public boolean isLeader(StudyGroupRole role){
-        return role == StudyGroupRole.LEADER;
-    }
+    //그룹 가입 요청
+    @Transactional
+    public void joinStudyGroupRequest(JoinGroupRequestDto dto) {
 
-    public User getCurrentUser(){
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByUsername(username)
-                .orElseThrow(()-> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
-    }
+        User user = userContextService.getCurrentUser();
+        StudyGroup studyGroup = userContextService.getCurrentStudyGroup(dto.getGroupName());
 
+        JoinStudyGroupRequest request = JoinStudyGroupRequest.builder()
+                .user(user)
+                .studyGroup(studyGroup)
+                .status(JoinStudyGroupStatus.PENDING)
+                .build();
 
-    public StudyGroup getCurrentStudyGroup(String groupName){
-        return studygroupRepository.findByGroupName(groupName)
-                .orElseThrow(()->new IllegalArgumentException("존재하지 않는 그룹입니다."));
-    }
-
-
-    public StudyGroupUser getCurrentStudyGroupUser(StudyGroup group, long userId){
-        return studygroupUserRepository
-                .findByStudyGroupAndUserId(group,userId)
-                .orElseThrow(()->new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+        joinStudygroupRepository.save(request);
     }
 }

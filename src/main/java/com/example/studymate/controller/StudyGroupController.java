@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class StudyGroupController {
 
     private final StudyGroupService studyGroupService;
-    private final StudyGroupUserService studyGroupUserService;
 
     @GetMapping
         public ResponseEntity<Page<StudyGroupDto>> getAllStudyGroups(Pageable pageable) {
@@ -30,17 +29,13 @@ public class StudyGroupController {
         return ResponseEntity.ok(dto.getGroupName() + " 스터디 그룹이 성공적으로 만들어졌습니다.");
     }
 
+
     @PostMapping("/join")
     public ResponseEntity<String> joinStudyGroup(@RequestBody JoinGroupRequestDto dto) {
-        studyGroupService.joinStudyGroup(dto);
+        studyGroupService.joinStudyGroupRequest(dto);
         return ResponseEntity.ok(dto.getGroupName() + " 스터디 그룹에 가입하였습니다.");
     }
 
-    @PostMapping("/leave")
-    public ResponseEntity<String> leaveStudyGroup(@RequestBody LeaveGroupRequestDto dto) {
-        studyGroupService.leaveStudyGroup(dto);
-        return ResponseEntity.ok(dto.getGroupName() + " 스터디 그룹을 탈퇴하였습니다.");
-    }
 
     @PostMapping("/delete")
     public ResponseEntity<String> deleteStudyGroup(@RequestBody DeleteGroupRequestDto dto) {
@@ -48,11 +43,6 @@ public class StudyGroupController {
         return ResponseEntity.ok(dto.getGroupName() + " 스터디 그룹이 삭제되었습니다.");
     }
 
-    @PostMapping("/remove")
-    public ResponseEntity<String> removeMember(@RequestBody RemoveMemberRequestDto dto) {
-        studyGroupUserService.removeMemberFromGroup(dto);
-        return ResponseEntity.ok(dto.getUserName() + "을(를) "
-                + dto.getGroupName() + " 스터디 그룹에서 추방하였습니다.");
-    }
+    
 
 }
