@@ -1,22 +1,23 @@
 package com.example.studymate.service;
 
-import com.example.studymate.domain.Role;
+import com.example.studymate.domain.*;
 import com.example.studymate.dto.User.*;
 import com.example.studymate.exception.AuthFailedException;
 import com.example.studymate.exception.InvalidPasswordException;
 import com.example.studymate.exception.ErrorCode;
 import com.example.studymate.exception.UserNotFoundException;
-import com.example.studymate.repository.RoleRepository;
+import com.example.studymate.repository.*;
 import com.example.studymate.security.JwtTokenProvider;
-import com.example.studymate.domain.User;
-import com.example.studymate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -24,10 +25,13 @@ import java.util.Set;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final StudyGroupUserRepository studyGroupUserRepository;
+    private final JoinStudyGroupRepository joinStudyGroupRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
+    private final StudyGroupUserService studyGroupUserService;
 
 
     // 회원가입
@@ -104,6 +108,7 @@ public class UserService {
 
 
     // 아이디 찾기
+    @Transactional
     public FindUsernameResponseDto findUsername(FindUsernameRequestDto dto) {
 
         User user = userRepository.findByNicknameAndEmail(dto.getNickname(),dto.getEmail())
@@ -112,4 +117,29 @@ public class UserService {
         return new FindUsernameResponseDto(user.getUsername());
     }
 
+    @Transactional
+    public MyInfoResponseDto myInfo(User user){
+
+        List<StudyGroupUser> studyGroupUserList = studyGroupUserRepository.findAllByUserId(user.getId());
+
+        List<JoinStudyGroupRequest> joinStudyGroupRequestList =
+                joinStudyGroupRepository.findAllByUserId(user.getId());
+
+        List<MyStudyGroups> myStudyGroupList = studyGroupUserList.stream()
+                .map(studyGroupUser -> new MyStudyGroups(
+                        studyGroupUser.getStudyGroup().getId(),studyGroupUser.getStudyGroup().getGroupName(),
+                        studyGroupUser.getStudyGroupRole())).collect(Collectors.toList());
+
+        List<MyJoinRequest> myJoinRequestList = joinStudyGroupRequestList.stream()
+                .map(request -> new MyJoinRequest(request.getStudyGroup().getId(),
+                        request.getStudyGroup().getGroupName(),request.getStatus()))
+                        .collect(Collectors.toList());
+
+        return MyInfoResponseDto.builder()
+                .nickName(user.getNickname())
+                .email(user.getEmail())
+                .studyGroups(myStudyGroupList)
+                .joinRequests(myJoinRequestList)
+                .build();
+    }
 }

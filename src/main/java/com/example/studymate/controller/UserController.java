@@ -1,5 +1,7 @@
 package com.example.studymate.controller;
 
+import com.example.studymate.config.CurrentUser;
+import com.example.studymate.domain.User;
 import com.example.studymate.dto.User.*;
 import com.example.studymate.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +54,10 @@ public class UserController {
     @PostMapping("/findUsername")
     public ResponseEntity<FindUsernameResponseDto> findUsername(@RequestBody FindUsernameRequestDto dto) {
         return ResponseEntity.ok(userService.findUsername(dto));
+    }
+
+    @PostMapping("/my-info")
+    public ResponseEntity<MyInfoResponseDto> viewMyInfo(@CurrentUser User user){
+        return ResponseEntity.ok(userService.myInfo(user));
     }
 }
